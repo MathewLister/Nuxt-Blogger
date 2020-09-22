@@ -1,30 +1,43 @@
 <template>
-    <div class="admin-post-page">
-        <section class="update-form">
-            <AdminPostForm :post="loadedPost" />
-        </section>
-    </div>
+  <div class="admin-post-page">
+    <section class="update-form">
+      <AdminPostForm :post="loadedPost" />
+    </section>
+  </div>
 </template>
 
 <script>
-import AdminPostForm from '@/components/Admin/AdminPostForm'
+import AdminPostForm from "@/components/Admin/AdminPostForm";
+import axios from "axios";
 
 export default {
-    layout: 'admin',
-    components: {
-        AdminPostForm
-    },
-    data () {
+  layout: "admin",
+  components: {
+    AdminPostForm
+  },
+  asyncData(context) {
+    return axios
+      .get(
+        "https://nuxt-blog-a57d4.firebaseio.com/posts/" +
+          context.params.postId +
+          ".json"
+      )
+      .then(res => {
+        console.log(res.data);
         return {
-            loadedPost: {
-                author: 'Mat',
-                title: 'Vue Is Awesome',
-                content: 'So amazing...',
-                thumbnailLink: 'https://www.industryconnect.org/wp-content/uploads/2018/10/nztech.jpg'
-            }
-        }
+          loadedPost: { ...res.data, id: context.params.postId }
+        };
+      })
+      .catch(e => context.error(e));
+  },
+  methods: {
+    onSubmitted(editedPost) {
+      this.$store.dispatch("editedPost", editedPost).then(() => {
+        this.$router.push("/admin");
+      });
     }
-}
+  }
+};
 </script>
 
 <style scoped>
